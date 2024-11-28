@@ -30,7 +30,8 @@ Step3:
 
 Running the app on local development server.
 
-•	After installation execute cd quiz_app command
+•	After installation execute this command on command prompt: 
+  cd quiz_app command
 
 •	Then execute python manage.py runserver. 
 
