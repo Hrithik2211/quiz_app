@@ -3,7 +3,7 @@ Step1:
 Clone the project in your system 
 Step2:
 Install Python, Venv and Django 
-•	Install Python in your system: https://www.python.org/downloads/.
+•#	Install Python in your system: https://www.python.org/downloads/.
 •	Install virtual environment using a command on command prompt: py -m venv .venv
 •	Now open this project in vsCode, Then open git bash in terminal  
 •	Execute below commands one by one :
