@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>Quiz App</h1>
+        <div id="quiz-container" class="mt-4">
+            <div id="question-container">
+                <h3 id="question"></h3>
+                <div id="options"></div>
+            </div>
+            <button id="submit-btn" class="btn btn-primary mt-3" disabled>Submit</button>
+            <button id="next-btn" class="btn btn-success mt-3 d-none">Next Question</button>
+            <button id="end-btn" class="btn btn-danger mt-3">End Quiz</button>
+            <div id="feedback" class="mt-4"></div>
+            <div id="progress" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Python is which type of language?",
+                options: ["Interpreted", "Compiled", "Partially interpreted and compiled", "All of the above"],
+                correct: "Partially interpreted and compiled"
+            },
+            {
+                question: "Which of these is fastest?",
+                options: ["tuples", "list", "Arrays", "same speed"],
+                correct: "Arrays"
+            },
+            {
+                question: "What are dictionaries in Python?",
+                options: ["Container of values", "set of key-value pairs", "Object notations", "set of unique keys and values"],
+                correct: "set of key-value pairs"
+            },
+            {
+                question: "What will be the value of 10//2'?",
+                options: ["5.0", "5", "0", "None of the above"],
+                correct: "5"
+            },
+            {
+                question: "What is an operating system?'?",
+                options: [" to provide the interface between the API and application program","to handle the files in the operating system"," to get and execute the next user - specified command"," All of the mentioned"],
+                correct: "All of the mentioned."
+            },
+            {
+                question: "What is use of .remove() function in Python'?",
+                options: ["To remove last element from list", "to remove specified element from list", "to return removed element from list", "to fetch a list with element removed"],
+                correct: "to remove specified element from list"
+            },
+            {
+                question: "Is Python case-sensitive language'?",
+                options: [ "no","yes","machine dependent","none of the mentioned"],
+                correct: "yes"
+            },
+            {
+                question: "What will be the value of 4+3%5'?",
+                options: ["5", "2", "7", "7.0"],
+                correct: "7"
+            },
+            {
+                question: "Python supports  the creation of anonymous functions at runtime, using a construct called __________?",
+                options: ["pi", "anonymous", "lambda", "None"],
+                correct: "lambda"
+            },
+            {
+                question: "How do you create a new Django project ?",
+                options: ["django new project_name","django init project_namerote ","django create project_name", "django startproject project_name"],
+                correct: "django startproject project_name"
+            },
+            
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let totalQuestions = questions.length;
+        let questionsAttempted = 0;
+
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const feedbackElement = document.getElementById('feedback');
+        const progressElement = document.getElementById('progress');
+        const submitButton = document.getElementById('submit-btn');
+        const nextButton = document.getElementById('next-btn');
+        const endButton  = document.getElementById('end-btn')
+        endButton.addEventListener('click', () => {
+            const lastProgress = JSON.parse(localStorage.getItem('quizProgress'));
+            if (lastProgress) {
+            feedbackElement.innerHTML = `<p class="text-info">Your quiz has been ended. Your last saved progress was: Score: ${lastProgress.score}/${lastProgress.total}, Percentage: ${lastProgress.percentage}%, Questions Attempted: ${lastProgress.questionsAttempted}.</p>`;
+            } else {
+            alert("Your quiz has been ended. No previous progress found.");
+            }
+            window.location.href = "/dashboard/"; 
+        });
+        function loadQuestion() {
+            feedbackElement.innerHTML = "";
+            nextButton.classList.add('d-none');
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.textContent = currentQuestion.question;
+            optionsElement.innerHTML = "";
+
+            currentQuestion.options.forEach(option => {
+            const optionElement = document.createElement('div');
+            optionElement.innerHTML = `
+                <label>
+                <input type="radio" name="answer" value="${option}"> ${option}
+                </label>
+            `;
+            optionsElement.appendChild(optionElement);
+            });
+
+            submitButton.disabled = true;
+            document.querySelectorAll('input[name="answer"]').forEach(input => {
+            input.addEventListener('change', () => {
+                submitButton.disabled = false;
+            });
+            });
+        }
+
+        function submitAnswer() {
+            const selectedOption = document.querySelector('input[name="answer"]:checked').value;
+            const currentQuestion = questions[currentQuestionIndex];
+            questionsAttempted++;
+            if (selectedOption === currentQuestion.correct) {
+            feedbackElement.innerHTML = `<p class="text-success">Correct!</p>`;
+            score++;
+            } else {
+            feedbackElement.innerHTML = `<p class="text-danger">Wrong! The correct answer is ${currentQuestion.correct}.</p>`;
+            }
+
+            progressElement.innerHTML = `<p>Score: ${score}/${currentQuestionIndex + 1}</p>`;
+            submitButton.classList.add('d-none');
+            nextButton.classList.remove('d-none');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+            loadQuestion();
+            submitButton.classList.remove('d-none');
+            } else {
+            showFinalScore();
+            }
+        }
+
+        function showFinalScore() {
+            questionElement.textContent = "Quiz Completed!";
+            optionsElement.innerHTML = "";
+            feedbackElement.innerHTML = `<p class="text-info">Your final score is ${score}/${totalQuestions}.</p>`;
+            submitButton.classList.add('d-none');
+            nextButton.classList.add('d-none');
+
+            
+            const progress = {
+                score: score,
+                total: totalQuestions,
+                percentage: ((score / totalQuestions) * 100).toFixed(2),
+                questionsAttempted: questionsAttempted
+            };
+            localStorage.setItem('quizProgress', JSON.stringify(progress));
+
+            
+            feedbackElement.innerHTML += `
+        <button id="back-to-dashboard" class="btn btn-primary mt-3">Go to Dashboard</button>
+        `;
+
+            document.getElementById('back-to-dashboard').addEventListener('click', () => {
+                window.location.href = "/dashboard/"; // Replace with your dashboard URL
+            });
+            }
+
+
+        submitButton.addEventListener('click', submitAnswer);
+        nextButton.addEventListener('click', nextQuestion);
+
+        loadQuestion();
+    </script>
+</body>
+
+</html>
